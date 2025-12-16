@@ -1,10 +1,11 @@
 from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi.security import OAuth2PasswordRequestForm, OAuth2PasswordBearer
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
-from db.session import get_async_session
-from schemas.user import UserOut, UserCreate
-from db.models import User
-from services.auth_service import hash_password
+from app.db.session import get_async_session
+from app.schemas.user import UserOut, UserCreate, UserLogin
+from app.db.models import User
+from app.services.auth_service import hash_password, verify_password, create_access_token
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
@@ -21,7 +22,7 @@ async def register_user(req: UserCreate, session : AsyncSession = Depends(get_as
   new_user = User(
     full_name=full_name,
     email=email,
-    hashed_password=hash_password(password)
+    password_hash=hash_password(password)
   )
   session.add(new_user)
   await session.commit()
@@ -32,3 +33,22 @@ async def register_user(req: UserCreate, session : AsyncSession = Depends(get_as
     "full_name": new_user.full_name,
     "email": new_user.email
   }
+
+
+@router.post("/login")
+async def login(
+  form_data: OAuth2PasswordRequestForm = Depends(), 
+  session: AsyncSession = Depends(get_async_session)
+):
+  query_result = await session.execute(select(User).where(User.email == form_data.username))
+  user = query_result.scalars().first()
+
+  if not user or not verify_password(form_data.password, user.password_hash):
+    raise HTTPException(
+      status_code=status.HTTP_401_UNAUTHORIZED,
+      detail="Invalid email or password",
+      headers={"WWW-Authenticate": "Bearer"},
+    )
+  access_token = create_access_token(data={"sub": str(user.id)})
+  
+  return {"access_token": access_token, "token_type": "bearer"}
