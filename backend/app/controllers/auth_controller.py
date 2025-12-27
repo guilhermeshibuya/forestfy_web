@@ -1,11 +1,11 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, Response
 from fastapi.security import OAuth2PasswordRequestForm, OAuth2PasswordBearer
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from app.db.session import get_async_session
 from app.schemas.user import UserOut, UserCreate, UserLogin
 from app.db.models import User
-from app.services.auth_service import hash_password, verify_password, create_access_token
+from app.services.auth_service import hash_password, verify_password, create_access_token, get_current_user
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
@@ -52,3 +52,20 @@ async def login(
   access_token = create_access_token(data={"sub": str(user.id)})
   
   return {"access_token": access_token, "token_type": "bearer"}
+
+
+@router.post("/auth/logout")
+async def logout(response: Response):
+  response.delete_cookie(key="access_token")
+  return {"message": "Successfully logged out"}
+
+
+@router.get("/auth/me", response_model=UserOut)
+async def get_me(current_user: User = Depends(get_current_user)):
+  return {
+    "id": str(current_user.id),
+    "full_name": current_user.full_name,
+    "email": current_user.email,
+    "is_admin": current_user.is_admin,
+    "profile_image_url": current_user.profile_image_url
+  }
