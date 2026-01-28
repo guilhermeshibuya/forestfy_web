@@ -14,5 +14,4 @@ class UserOut(BaseModel):
   id: UUID
   full_name: str
   email: EmailStr
-  is_admin: bool
   profile_image_url: str | None = None
