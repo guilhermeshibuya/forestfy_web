@@ -4,6 +4,7 @@ from contextlib import asynccontextmanager
 from app.db.session import engine
 from app.db.models import Base
 from app.controllers import auth_controller
+from app.controllers import classification_controller
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -42,3 +43,8 @@ app.include_router(
   tags=["auth"]
 )
 
+app.include_router(
+  classification_controller.router,
+  prefix=PREFIX,
+  tags=["classification"]
+)

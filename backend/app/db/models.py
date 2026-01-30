@@ -1,5 +1,5 @@
 import sqlalchemy as sa
-from sqlalchemy import Column, String, Boolean, DateTime, ForeignKey, Float
+from sqlalchemy import Column, String, Boolean, DateTime, ForeignKey, Float, Integer
 from sqlalchemy.orm import relationship, DeclarativeBase, Mapped, mapped_column
 from sqlalchemy.dialects.postgresql import UUID
 
@@ -42,6 +42,7 @@ class Species(Base):
   __tablename__ = 'species'
 
   id: Mapped[UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid4)
+  model_class_id: Mapped[int] = mapped_column(Integer, nullable=False, unique=True)
   scientific_name: Mapped[str] = mapped_column(String(255), nullable=False)
   popular_name: Mapped[str] = mapped_column(String(255), nullable=False)
   description: Mapped[str | None] = mapped_column(String, nullable=True)

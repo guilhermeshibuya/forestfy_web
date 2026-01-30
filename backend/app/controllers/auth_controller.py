@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException, status, Response
-from fastapi.security import OAuth2PasswordRequestForm, OAuth2PasswordBearer
+from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from app.db.session import get_async_session
@@ -54,13 +54,13 @@ async def login(
   return {"access_token": access_token, "token_type": "bearer"}
 
 
-@router.post("/auth/logout")
+@router.post("/logout")
 async def logout(response: Response):
   response.delete_cookie(key="access_token")
   return {"message": "Successfully logged out"}
 
 
-@router.get("/auth/me", response_model=UserOut)
+@router.get("/me", response_model=UserOut)
 async def get_me(current_user: User = Depends(get_current_user)):
   return {
     "id": str(current_user.id),

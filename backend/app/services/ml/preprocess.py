@@ -24,7 +24,7 @@ def preprocess_image(image: Image.Image) -> np.ndarray:
 
     # Normalize pixel values to the range [0, 1]
     image_array = image_array.astype('float32') / 255.0
-
+    image_array = np.transpose(image_array, (2, 0, 1)) # Change data layout to NCHW
     # Add batch dimension
     image_array = np.expand_dims(image_array, axis=0)
 

@@ -3,7 +3,7 @@ from fastapi import Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.db.session import get_async_session
 from fastapi.params import Depends
-from fastapi.security import OAuth2PasswordBearer
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from app.db.models import User
 from sqlalchemy.future import select
 from jose import JWTError, jwt
@@ -13,6 +13,8 @@ import os
 SECRET_KEY = os.environ.get("SECRET_KEY")
 ACCESS_TOKEN_EXPIRE_MINUTES = 60 * 24  # 1 day
 ALGORITHM = "HS256"
+
+security = HTTPBearer()
 
 
 def hash_password(password: str) -> str:
@@ -39,30 +41,25 @@ def verify_access_token(token: str) -> dict | None:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         return payload
     except JWTError:
-        return None
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Could not validate credentials"
+        )
     
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
-
+    
 async def get_current_user(
-    token: str = Depends(oauth2_scheme),
+    credentials: HTTPAuthorizationCredentials = Depends(security),
     session: AsyncSession = Depends(get_async_session)
 ):
-    credentials_exception = HTTPException(
-        status_code=status.HTTP_401_UNAUTHORIZED,
-        detail="Could not validate credentials",
-        headers={"WWW-Authenticate": "Bearer"},
-    )
-    try:
-        payload = jwt.decode(
-            token,
-            SECRET_KEY,
-            algorithms=ALGORITHM
+    token = credentials.credentials
+    payload = verify_access_token(token)
+    
+    user_id = payload.get("sub")
+    if not user_id:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid token payload"
         )
-        user_id: str | None = payload.get("sub")
-        if user_id is None:
-            raise credentials_exception
-    except JWTError:
-        raise credentials_exception
     
     result = await session.execute(
         select(User).where(User.id == user_id)
@@ -70,6 +67,7 @@ async def get_current_user(
     user = result.scalars().first()
 
     if user is None:
-        raise credentials_exception
-    
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED, detail="User not found"
+        )
     return user

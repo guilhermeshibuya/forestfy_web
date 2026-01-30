@@ -2,9 +2,9 @@ import onnxruntime as ort
 from pathlib import Path
 from typing import Tuple
 
-BASE_DIR = Path(__file__).resolve().parents[3]
+BASE_DIR = Path("/app/app")
 
-MODEL_PATH = BASE_DIR / "services" / "ml" / "models" / "d15-sp.onnx"
+MODEL_PATH = BASE_DIR / "services" / "ml" / "weights" / "d15-sp.onnx"
 
 _session = None
 
