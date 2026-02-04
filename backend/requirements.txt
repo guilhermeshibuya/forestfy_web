@@ -8,3 +8,4 @@ passlib[bcrypt]==1.7.4
 python-jose[cryptography]==3.5.0
 onnxruntime==1.23.2
 pillow==12.1.0
+pydantic-settings==2.12.0

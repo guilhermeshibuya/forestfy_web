@@ -1,3 +1,5 @@
+from fastapi.params import Depends
+from fastapi import HTTPException, status
 import numpy as np
 from app.services.ml.model_loader import get_model
 from app.services.ml.id2label import ID2LABEL
@@ -82,4 +84,105 @@ async def save_classification(
   await session.refresh(classification)
 
   return classification
+
+
+async def get_user_classifications(
+  session: AsyncSession,
+  user_id: UUID
+):
+  result = await session.execute(
+    select(Classification)
+    .where(Classification.user_id == user_id)
+    .order_by(Classification.classification_date.desc())
+  )
+  classifications = result.scalars().unique().all()
+
+  response = []
+
+  for classification in classifications:
+    result = await session.execute(
+      select(
+        SpeciesClassification.score,
+        Species.id,
+        Species.scientific_name,
+        Species.popular_name
+      )
+      .join(
+        Species, Species.id == SpeciesClassification.species_id
+      )
+      .where(
+        SpeciesClassification.classification_id == classification.id
+      )
+      .order_by(SpeciesClassification.score.desc())
+    )
+    species_results = [
+      {
+        "species_id": row.id,
+        "scientific_name": row.scientific_name,
+        "popular_name": row.popular_name,
+        "score": row.score
+      }
+      for row in result.all()
+    ]
+
+    response.append({
+      "id": classification.id,
+      "classification_date": classification.classification_date,
+      "original_image_url": classification.original_image_url,
+      "location": classification.location,
+      "predictions": species_results
+    })
+  return response
+
+
+async def get_classification_by_id(
+  session: AsyncSession,
+  classification_id: UUID,
+  user_id: UUID
+):
+  result = await session.execute(
+    select(Classification)
+    .where(
+      Classification.id == classification_id,
+      Classification.user_id == user_id  
+    )
+  )
+  classification = result.scalars().first()
   
+  if not classification:
+    return HTTPException(
+      status_code=status.HTTP_404_NOT_FOUND,
+      detail="Classification not found"
+    )
+  result = await session.execute(
+    select(
+      SpeciesClassification.score,
+      Species.id,
+      Species.scientific_name,
+      Species.popular_name
+    )
+    .join(
+      Species, Species.id == SpeciesClassification.species_id
+    )
+    .where(
+      SpeciesClassification.classification_id == classification.id
+    )
+    .order_by(SpeciesClassification.score.desc())
+  )
+  species_results = [
+    {
+      "species_id": row.id,
+      "scientific_name": row.scientific_name,
+      "popular_name": row.popular_name,
+      "score": row.score
+    }
+    for row in result.all()
+  ]
+
+  return {
+    "id": classification.id,
+    "classification_date": classification.classification_date,
+    "original_image_url": classification.original_image_url,
+    "location": classification.location,
+    "predictions": species_results
+  }

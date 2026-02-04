@@ -3,8 +3,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 from app.db.session import engine
 from app.db.models import Base
-from app.controllers import auth_controller
-from app.controllers import classification_controller
+from app.controllers import auth_controller, classification_controller, species_image_controller
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -46,5 +46,11 @@ app.include_router(
 app.include_router(
   classification_controller.router,
   prefix=PREFIX,
-  tags=["classification"]
+  tags=["classifications"]
+)
+
+app.include_router(
+  species_image_controller.router,
+  prefix=PREFIX,
+  tags=["species_images"]
 )

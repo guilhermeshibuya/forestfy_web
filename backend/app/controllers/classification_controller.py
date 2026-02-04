@@ -1,5 +1,5 @@
 from fastapi import APIRouter, HTTPException, UploadFile, File
-from app.services.classification_service import run_classification, save_classification
+from app.services.classification_service import run_classification, save_classification, get_user_classifications, get_classification_by_id
 from PIL import Image
 from app.services.ml.preprocess import preprocess_image
 from app.services.auth_service import get_current_user
@@ -7,8 +7,34 @@ from app.db.models import User
 from fastapi import Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.db.session import get_async_session
+from app.schemas.classification import ClassificationOut
+from app.core.constants import TOP_K
 
-router = APIRouter(prefix="/classification", tags=["classification"])
+router = APIRouter(prefix="/classifications", tags=["classifications"])
+
+@router.get("/", response_model=list[ClassificationOut])
+async def get_classifications(
+  current_user: User = Depends(get_current_user),
+  session: AsyncSession = Depends(get_async_session)
+):
+  return await get_user_classifications(
+    session=session,
+    user_id=current_user.id
+  )
+  
+
+@router.get("/{classification_id}", response_model=ClassificationOut)
+async def get_classification(
+  classification_id: str,
+  current_user: User = Depends(get_current_user),
+  session: AsyncSession = Depends(get_async_session)
+):
+  return await get_classification_by_id(
+    session=session,
+    classification_id=classification_id,
+    user_id=current_user.id
+  )
+
 
 @router.post("/")
 async def classification(
@@ -16,8 +42,6 @@ async def classification(
   current_user: User = Depends(get_current_user),
   session: AsyncSession = Depends(get_async_session)
 ):
-  TOP_K = 5
-
   try:
     image = Image.open(file.file)
   except Exception as e:
@@ -39,3 +63,5 @@ async def classification(
     "top_k": TOP_K,
     "predictions": results
   }
+
+

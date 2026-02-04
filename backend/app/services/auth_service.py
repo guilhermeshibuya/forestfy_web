@@ -8,11 +8,13 @@ from app.db.models import User
 from sqlalchemy.future import select
 from jose import JWTError, jwt
 from passlib.hash import bcrypt
-import os
+from app.core.config import Settings
 
-SECRET_KEY = os.environ.get("SECRET_KEY")
-ACCESS_TOKEN_EXPIRE_MINUTES = 60 * 24  # 1 day
-ALGORITHM = "HS256"
+settings = Settings()
+
+SECRET_KEY = settings.JWT_SECRET_KEY
+ACCESS_TOKEN_EXPIRE_MINUTES = settings.ACCES_TOKEN_EXPIRE_MINUTES
+ALGORITHM = settings.JWT_ALGORITHM
 
 security = HTTPBearer()
 

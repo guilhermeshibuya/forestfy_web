@@ -1,10 +1,12 @@
 import onnxruntime as ort
 from pathlib import Path
 from typing import Tuple
+from app.core.config import Settings
 
-BASE_DIR = Path("/app/app")
 
-MODEL_PATH = BASE_DIR / "services" / "ml" / "weights" / "d15-sp.onnx"
+settings = Settings()
+
+MODEL_PATH = Path(settings.MODEL_PATH)
 
 _session = None
 
