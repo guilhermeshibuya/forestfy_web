@@ -2,6 +2,8 @@ from fastapi import APIRouter, Depends, UploadFile, HTTPException, status, File
 from sqlalchemy.ext.asyncio import AsyncSession
 from uuid import UUID
 
+from app.db.models import User
+from app.core.security import get_admin_user
 from app.db.session import get_async_session
 from app.schemas.species_image import SpeciesImageOut
 from app.services.species_image_service import upload_species_image, get_species_images, delete_species_image
@@ -19,7 +21,8 @@ router = APIRouter(
 async def upload_image(
   specieds_id: UUID,
   file: UploadFile = File(...),
-  session: AsyncSession = Depends(get_async_session)
+  session: AsyncSession = Depends(get_async_session),
+  _: User = Depends(get_admin_user)
 ):
   return await upload_species_image(
     session=session,
@@ -41,11 +44,12 @@ async def get_images(
 
 @router.delete(
   "/{species_id}/images/{image_id}",
-  status_code=status.HTTP_204_NO_CONTENT
+  status_code=status.HTTP_204_NO_CONTENT,
 )
 async def delete_image(
   species_id: UUID,
   image_id: UUID,
-  session: AsyncSession = Depends(get_async_session)
+  session: AsyncSession = Depends(get_async_session),
+  _: User = Depends(get_admin_user)
 ):
   await delete_species_image(session=session, species_id=species_id, image_id=image_id)

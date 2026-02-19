@@ -3,7 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 from app.db.session import engine
 from app.db.models import Base
-from app.controllers import auth_controller, classification_controller, species_image_controller
+from app.controllers import auth_controller, classification_controller, species_image_controller, species_controller
 
 
 @asynccontextmanager
@@ -53,4 +53,10 @@ app.include_router(
   species_image_controller.router,
   prefix=PREFIX,
   tags=["species_images"]
+)
+
+app.include_router(
+  species_controller.router,
+  prefix=PREFIX,
+  tags=["species"]
 )

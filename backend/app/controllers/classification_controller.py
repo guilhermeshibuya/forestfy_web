@@ -44,7 +44,7 @@ async def classification(
 ):
   try:
     image = Image.open(file.file)
-  except Exception as e:
+  except Exception:
     raise HTTPException(status_code=400, detail="Invalid image")
   
   tensor = preprocess_image(image)
