@@ -5,6 +5,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.db.models import SpeciesImage, Species
 from sqlalchemy import select
 from app.core.constants import UPLOAD_DIR
+from app.core.error_messages import SPECIES_IMAGE_NOT_FOUND, SPECIES_NOT_FOUND
+from app.core.exceptions import NotFoundException
 
 
 async def upload_species_image(
@@ -18,10 +20,7 @@ async def upload_species_image(
   species = result.scalars().first()
 
   if not species:
-    raise HTTPException(
-      status_code=status.HTTP_404_NOT_FOUND,
-      detail="Species not found"
-    )
+    raise NotFoundException(SPECIES_NOT_FOUND)
   
   file_ext = file.filename.split(".")[-1]
   file_name = f"{uuid4()}.{file_ext}"
@@ -53,10 +52,7 @@ async def get_species_images(
   )
 
   if not result:
-    raise HTTPException(
-      status_code=status.HTTP_404_NOT_FOUND,
-      detail="No images found for this species"
-    )
+    raise NotFoundException(SPECIES_IMAGE_NOT_FOUND)
   
   return result.scalars().all()
 
@@ -76,10 +72,7 @@ async def delete_species_image(
   image = result.scalars().first()
 
   if not image:
-    raise HTTPException(
-      status_code=status.HTTP_404_NOT_FOUND,
-      detail="Image not found"
-    )
+    raise NotFoundException(SPECIES_IMAGE_NOT_FOUND)
 
   if os.path.exists(image.image_url):
     os.remove(image.image_url)

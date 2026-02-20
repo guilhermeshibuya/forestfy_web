@@ -5,27 +5,18 @@ from fastapi import HTTPException, status
 from uuid import UUID
 
 from app.db.models import Species, SpeciesPopularName
+from app.core.error_messages import SPECIES_NOT_FOUND, SPECIES_ALREADY_EXISTS, POPULAR_NAME_NOT_FOUND
+from app.core.exceptions import NotFoundException, ConflictException
 from app.schemas.species import SpeciesCreate
 
-async def get_species(
+async def get_all_species(
   session: AsyncSession
 ):
   result = await session.execute(
     select(Species)
     .options(selectinload(Species.popular_names))
   )
-  species_list = result.scalars().all()
-  
-  return [
-    {
-      "id": species.id,
-      "model_class_id": species.model_class_id,
-      "scientific_name": species.scientific_name,
-      "description": species.description,
-      "popular_names": [pn.name for pn in species.popular_names],
-    }
-    for species in species_list
-  ]
+  return result.scalars().all()
 
 
 async def get_species_by_id(
@@ -39,18 +30,9 @@ async def get_species_by_id(
   species = result.scalar_one_or_none()
 
   if not species:
-    raise HTTPException(
-      status_code=status.HTTP_404_NOT_FOUND,
-      detail="Species not found"
-    )
+    raise NotFoundException(SPECIES_NOT_FOUND)
   
-  return {
-    "id": species.id,
-    "model_class_id": species.model_class_id,
-    "scientific_name": species.scientific_name,
-    "description": species.description,
-    "popular_names": [pn.name for pn in species.popular_names],
-  }
+  return species
 
 
 async def create_species(
@@ -70,9 +52,8 @@ async def create_species(
   existing_species = result.scalar_one_or_none()
 
   if existing_species:
-    raise HTTPException(
-      status_code=status.HTTP_400_BAD_REQUEST,
-      detail="Species with the same scientific name or model class ID already exists"
+    raise ConflictException(
+      message=SPECIES_ALREADY_EXISTS
     )
   
   new_species = Species(
@@ -102,13 +83,7 @@ async def create_species(
   )
   species = result.scalar_one_or_none()
 
-  return {
-    "id": species.id,
-    "model_class_id": species.model_class_id,
-    "scientific_name": species.scientific_name,
-    "popular_names": [pn.name for pn in species.popular_names],
-    "description": species.description
-  }
+  return species
 
 
 async def update_species(
@@ -124,10 +99,7 @@ async def update_species(
   species = result.scalar_one_or_none()
 
   if not species:
-    raise HTTPException(
-      status_code=status.HTTP_404_NOT_FOUND,
-      detail="Species not found"
-    )
+    raise NotFoundException(SPECIES_NOT_FOUND)
   
   # Check for conflicts with other species (scientific name or model class ID)
   result = await session.execute(
@@ -143,10 +115,7 @@ async def update_species(
   conflicting_species = result.scalar_one_or_none()
 
   if conflicting_species:
-    raise HTTPException(
-      status_code=status.HTTP_400_BAD_REQUEST,
-      detail="Species with the same scientific name or model class ID already exists"
-    )
+    raise ConflictException(SPECIES_ALREADY_EXISTS)
 
   species.model_class_id = species_data.model_class_id
   species.scientific_name = species_data.scientific_name
@@ -160,13 +129,7 @@ async def update_species(
   await session.commit()
   await session.refresh(species)
 
-  return {
-    "id": species.id,
-    "model_class_id": species.model_class_id,
-    "scientific_name": species.scientific_name,
-    "description": species.description,
-    "popular_names": [pn.name for pn in species.popular_names],
-  }
+  return species
 
 
 async def delete_species(
@@ -180,10 +143,7 @@ async def delete_species(
   species = result.scalar_one_or_none()
 
   if not species:
-    raise HTTPException(
-      status_code=status.HTTP_404_NOT_FOUND,
-      detail="Species not found"
-    )
+    raise NotFoundException(SPECIES_NOT_FOUND)
   
   await session.delete(species)
   await session.commit()
@@ -201,16 +161,34 @@ async def create_popular_name(
   species = result.scalar_one_or_none()
 
   if not species:
-    raise HTTPException(
-      status_code=status.HTTP_404_NOT_FOUND,
-      detail="Species not found"
-    )
+    raise NotFoundException(SPECIES_NOT_FOUND)
 
   popular_name = SpeciesPopularName(
     species_id=species_id,
     name=name
   )
   session.add(popular_name)
+  await session.commit()
+
+  return popular_name
+
+
+async def update_popular_name(
+  popular_name_id: UUID,
+  new_name: str,
+  session: AsyncSession
+):
+  result = await session.execute(
+    select(SpeciesPopularName)
+    .where(SpeciesPopularName.id == popular_name_id)
+  )
+
+  popular_name = result.scalars().first()
+
+  if not popular_name:
+    raise NotFoundException(POPULAR_NAME_NOT_FOUND)
+  
+  popular_name.name = new_name
   await session.commit()
 
   return popular_name
@@ -228,10 +206,7 @@ async def remove_popular_name(
   name = result.scalars().first()
 
   if not name:
-    raise HTTPException(
-      status_code=status.HTTP_404_NOT_FOUND,
-      detail="Popular name not found"
-    )
+    raise NotFoundException(POPULAR_NAME_NOT_FOUND)
   
   await session.delete(name)
   await session.commit()

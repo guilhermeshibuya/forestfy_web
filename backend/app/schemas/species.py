@@ -17,3 +17,12 @@ class SpeciesCreate(BaseModel):
   scientific_name: str
   popular_names: list[str]
   description: str | None
+
+
+class SpeciesPopularName(BaseModel):
+  id: UUID
+  species_id: UUID
+  name: str
+  
+  class Config:
+    orm_mode = True

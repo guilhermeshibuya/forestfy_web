@@ -8,6 +8,9 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from uuid import UUID
 
+from app.core.exceptions import MLProcessingException, NotFoundException
+from app.core.error_messages import CLASSIFICATION_NOT_FOUND, RUN_CLASSIFICATION_ERROR
+
 
 class ClassificationResult(dict):
   label: str
@@ -24,24 +27,27 @@ def normalize_confidence(value: float, decimals: int = 4) -> float:
 
 def run_classification(input_tensor: np.ndarray, top_k: int = 5) -> list[ClassificationResult]:
   """Run inference on the input tensor using the loaded model."""
-  model = get_model()
+  try:
+    model = get_model()
 
-  input_name = model.get_inputs()[0].name
-  outputs = model.run(None, {input_name: input_tensor})
+    input_name = model.get_inputs()[0].name
+    outputs = model.run(None, {input_name: input_tensor})
 
-  probs = outputs[0][0] # Assuming single batch input
+    probs = outputs[0][0] # Assuming single batch input
 
-  top_indices = probs.argsort()[-top_k:][::-1]
+    top_indices = probs.argsort()[-top_k:][::-1]
 
-  results = []
-  for class_id in top_indices:
-    results.append({
-      "class_id": int(class_id),
-      "label": ID2LABEL.get(int(class_id), "unknown"),
-      "confidence": normalize_confidence(float(probs[class_id]))
-    })
+    results = []
+    for class_id in top_indices:
+      results.append({
+        "class_id": int(class_id),
+        "label": ID2LABEL.get(int(class_id), "unknown"),
+        "confidence": normalize_confidence(float(probs[class_id]))
+      })
 
-  return results
+    return results
+  except Exception:
+    raise MLProcessingException(RUN_CLASSIFICATION_ERROR)
 
 
 async def save_classification(
@@ -97,6 +103,9 @@ async def get_user_classifications(
   )
   classifications = result.scalars().unique().all()
 
+  if not classifications:
+    return []
+
   response = []
 
   for classification in classifications:
@@ -150,10 +159,8 @@ async def get_classification_by_id(
   classification = result.scalars().first()
   
   if not classification:
-    return HTTPException(
-      status_code=status.HTTP_404_NOT_FOUND,
-      detail="Classification not found"
-    )
+    return NotFoundException(CLASSIFICATION_NOT_FOUND)
+
   result = await session.execute(
     select(
       SpeciesClassification.score,

@@ -7,6 +7,7 @@ from app.core.security import get_admin_user
 from app.db.session import get_async_session
 from app.schemas.species_image import SpeciesImageOut
 from app.services.species_image_service import upload_species_image, get_species_images, delete_species_image
+from app.core.exceptions import NotFoundException
 
 router = APIRouter(
   prefix="/species",
@@ -24,11 +25,17 @@ async def upload_image(
   session: AsyncSession = Depends(get_async_session),
   _: User = Depends(get_admin_user)
 ):
-  return await upload_species_image(
-    session=session,
-    species_id=specieds_id,
-    file=file
-  )
+  try:
+    return await upload_species_image(
+      session=session,
+      species_id=specieds_id,
+      file=file
+    )
+  except NotFoundException as e:
+    raise HTTPException(
+      status_code=status.HTTP_404_NOT_FOUND,
+      detail=str(e)
+    )
 
 
 @router.get(
@@ -39,7 +46,13 @@ async def get_images(
   species_id: UUID,
   session: AsyncSession = Depends(get_async_session)
 ):
-  return await get_species_images(session=session, species_id=species_id)
+  try:
+    return await get_species_images(session=session, species_id=species_id)
+  except NotFoundException as e:
+    raise HTTPException(
+      status_code=status.HTTP_404_NOT_FOUND,
+      detail=str(e)
+    )
 
 
 @router.delete(
@@ -52,4 +65,10 @@ async def delete_image(
   session: AsyncSession = Depends(get_async_session),
   _: User = Depends(get_admin_user)
 ):
-  await delete_species_image(session=session, species_id=species_id, image_id=image_id)
+  try:
+    await delete_species_image(session=session, species_id=species_id, image_id=image_id)
+  except NotFoundException as e:
+    raise HTTPException(
+      status_code=status.HTTP_404_NOT_FOUND,
+      detail=str(e)
+    )

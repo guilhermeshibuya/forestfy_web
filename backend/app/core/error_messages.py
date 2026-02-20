@@ -1,0 +1,8 @@
+SPECIES_NOT_FOUND = "Species not found"
+SPECIES_ALREADY_EXISTS = "Species with the same scientific name or model class ID already exists"
+POPULAR_NAME_NOT_FOUND = "Popular name not found"
+SPECIES_IMAGE_NOT_FOUND = "No images found for this species"
+CLASSIFICATION_NOT_FOUND = "Classification not found"
+INVALID_IMAGE = "Invalid image"
+IMAGE_PROCESSING_ERROR = "Error processing the image for classification"
+RUN_CLASSIFICATION_ERROR = "Error running the classification model"
