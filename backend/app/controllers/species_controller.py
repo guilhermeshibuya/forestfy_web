@@ -2,10 +2,13 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from uuid import UUID
 
+from app.db.models import User
 from app.schemas.species import Species, SpeciesCreate, SpeciesPopularName
 from app.core.exceptions import NotFoundException, ConflictException
 from app.db.session import get_async_session
 from app.services import species_service
+
+from app.core.security.dependencies import get_admin_user, get_current_user
 
 
 router = APIRouter(
@@ -18,7 +21,8 @@ router = APIRouter(
   response_model=list[Species]
 )
 async def get_all_species(
-  session: AsyncSession = Depends(get_async_session)
+  session: AsyncSession = Depends(get_async_session),
+  _: User = Depends(get_current_user)
 ):
   species_list = await species_service.get_all_species(session)
   
@@ -40,7 +44,8 @@ async def get_all_species(
 )
 async def get_species_by_id(
   species_id: UUID,
-  session: AsyncSession = Depends(get_async_session)
+  session: AsyncSession = Depends(get_async_session),
+  _: User = Depends(get_current_user)
 ):
   try:
     species = await species_service.get_species_by_id(species_id, session)
@@ -65,7 +70,8 @@ async def get_species_by_id(
 )
 async def create_species(
   species_data: SpeciesCreate,
-  session: AsyncSession = Depends(get_async_session)
+  session: AsyncSession = Depends(get_async_session),
+  _: User = Depends(get_admin_user)
 ):
   try:
     species = await species_service.create_species(species_data, session)
@@ -91,7 +97,8 @@ async def create_species(
 async def update_species(
   species_id: UUID,
   species_data: SpeciesCreate,
-  session: AsyncSession = Depends(get_async_session)
+  session: AsyncSession = Depends(get_async_session),
+  _: User = Depends(get_admin_user)
 ):
   try:
     species = await species_service.update_species(species_id, species_data, session)
@@ -121,7 +128,8 @@ async def update_species(
 )
 async def delete_species(
   species_id: UUID,
-  session: AsyncSession = Depends(get_async_session)
+  session: AsyncSession = Depends(get_async_session),
+  _: User = Depends(get_admin_user)
 ):
   try:
     await species_service.delete_species(species_id, session)
@@ -138,7 +146,8 @@ async def delete_species(
 async def add_popular_name(
   species_id: UUID,
   name: str,
-  session: AsyncSession = Depends(get_async_session)
+  session: AsyncSession = Depends(get_async_session),
+  _: User = Depends(get_admin_user)
 ):
   try:
     return await species_service.create_popular_name(species_id, name, session)
@@ -156,7 +165,8 @@ async def add_popular_name(
 async def update_popular_name(
   popular_name_id: UUID,
   new_name: str,
-  session: AsyncSession = Depends(get_async_session)
+  session: AsyncSession = Depends(get_async_session),
+  _: User = Depends(get_admin_user)
 ):
   try:
     return await species_service.update_popular_name(popular_name_id, new_name, session)
@@ -173,7 +183,8 @@ async def update_popular_name(
 )
 async def delete_popular_name(
   popular_name_id: UUID,
-  session: AsyncSession = Depends(get_async_session)
+  session: AsyncSession = Depends(get_async_session),
+  _: User = Depends(get_admin_user)
 ):
   try:
     return await species_service.remove_popular_name(popular_name_id, session)

@@ -3,16 +3,18 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from uuid import UUID
 
 from app.db.models import User
-from app.core.security import get_admin_user
+from app.core.security.dependencies import get_admin_user
 from app.db.session import get_async_session
 from app.schemas.species_image import SpeciesImageOut
 from app.services.species_image_service import upload_species_image, get_species_images, delete_species_image
 from app.core.exceptions import NotFoundException
 
+
 router = APIRouter(
   prefix="/species",
   tags=["species_images"]
 )
+
 
 @router.post(
   "/{species_id}/images",

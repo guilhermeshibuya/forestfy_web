@@ -1,7 +1,6 @@
 from sqlalchemy import or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
-from fastapi import HTTPException, status
 from uuid import UUID
 
 from app.db.models import Species, SpeciesPopularName

@@ -4,11 +4,14 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.db.session import get_async_session
 from app.schemas.user import UserOut, UserCreate
 from app.db.models import User
-from app.services.auth_service import create_access_token, get_current_user
+from app.core.security.jwt import create_access_token
+from app.core.security.dependencies import get_current_user
 from app.services.user_service import get_by_email, create_user, validate_password
 from app.core.error_messages import USER_ALREADY_EXISTS, INVALID_CREDENTIALS
 
+
 router = APIRouter(prefix="/auth", tags=["auth"])
+
 
 @router.post("/register", response_model=UserOut)
 async def register_user(

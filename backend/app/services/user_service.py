@@ -3,7 +3,7 @@ from app.db.models import User
 from sqlalchemy import select
 from uuid import UUID
 
-from app.services.auth_service import hash_password, verify_password
+from app.core.security.hashing import hash_password, verify_password
 
 async def get_by_email(
   email: str,

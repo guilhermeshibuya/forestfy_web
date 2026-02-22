@@ -1,9 +1,7 @@
-from fastapi.params import Depends
-from fastapi import HTTPException, status
 import numpy as np
 from app.services.ml.model_loader import get_model
 from app.services.ml.id2label import ID2LABEL
-from app.db.models import Classification, SpeciesClassification, User, Species
+from app.db.models import Classification, SpeciesClassification, Species
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from uuid import UUID

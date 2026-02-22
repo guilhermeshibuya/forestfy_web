@@ -2,7 +2,7 @@ from fastapi import APIRouter, HTTPException, UploadFile, File
 from app.services.classification_service import run_classification, save_classification, get_user_classifications, get_classification_by_id
 from PIL import Image
 from app.services.ml.preprocess import preprocess_image
-from app.services.auth_service import get_current_user
+from app.core.security.dependencies import get_current_user
 from app.db.models import User
 from fastapi import Depends
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -12,7 +12,9 @@ from app.core.constants import TOP_K
 from app.core.error_messages import INVALID_IMAGE
 from app.core.exceptions import MLProcessingException, NotFoundException
 
+
 router = APIRouter(prefix="/classifications", tags=["classifications"])
+
 
 @router.get("/", response_model=list[ClassificationOut])
 async def get_classifications(
