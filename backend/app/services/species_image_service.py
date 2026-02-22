@@ -1,6 +1,6 @@
 import os
 from uuid import UUID, uuid4
-from fastapi import UploadFile, HTTPException, status
+from fastapi import UploadFile
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.db.models import SpeciesImage, Species
 from sqlalchemy import select
