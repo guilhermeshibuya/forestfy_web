@@ -1,0 +1,15 @@
+export const FORM_MESSAGES = {
+  INVALID_EMAIL: 'Email inválido',
+  PASSWORD_MIN_LENGTH: 'A senha deve conter no mínimo 6 caracteres',
+  NAME_MIN_LENGTH: 'O nome deve conter no mínimo 2 caracteres',
+  EMAIL_PLACEHOLDER: 'Digite seu email',
+  PASSWORD_PLACEHOLDER: 'Digite sua senha',
+  NAME_PLACEHOLDER: 'Digite seu nome',
+  EMAIL_LABEL: 'Email',
+  PASSWORD_LABEL: 'Senha',
+  NAME_LABEL: 'Nome',
+  LOGIN_BUTTON: 'Entrar',
+  REGISTER_BUTTON: 'Registrar',
+  LOGIN_SUBMITTING: 'Entrando...',
+  REGISTER_SUBMITTING: 'Registrando...',
+}
