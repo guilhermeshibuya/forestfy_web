@@ -8,6 +8,7 @@ from app.core.security.jwt import create_access_token
 from app.core.security.dependencies import get_current_user
 from app.services.user_service import get_by_email, create_user, validate_password
 from app.core.error_messages import USER_ALREADY_EXISTS, INVALID_CREDENTIALS
+from app.core.config import Settings
 
 
 router = APIRouter(prefix="/auth", tags=["auth"])
@@ -39,6 +40,8 @@ async def login(
   form_data: OAuth2PasswordRequestForm = Depends(), 
   session: AsyncSession = Depends(get_async_session)
 ):
+  settings = Settings()
+
   user = await get_by_email(form_data.username, session)
 
   if not user or not validate_password(form_data.password, user.password_hash):
@@ -54,7 +57,8 @@ async def login(
     value=access_token,
     httponly=True,
     #secure=True,  # Set to True in production
-    samesite="lax"
+    samesite="lax",
+    max_age=settings.ACCESS_TOKEN_EXPIRE_MINUTES * 60
   )
   
   return {"message": "Login successful"}
