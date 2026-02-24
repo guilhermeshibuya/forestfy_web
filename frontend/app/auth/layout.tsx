@@ -1,3 +1,4 @@
+import { AUTH_PAGE_MESSAGES } from '@/constants/auth-page-messages'
 import type React from 'react'
 
 export default function AuthLayout({
@@ -11,9 +12,7 @@ export default function AuthLayout({
             Forestfy
           </h1>
           <p className="text-neutral-200 max-w-[70ch]">
-            Sistema para reconhecimento de espécies florestais de diferentes
-            biomas, pensada para apoiar o trabalho dos fiscais, agilizando a
-            verificação de espécies
+            {AUTH_PAGE_MESSAGES.HERO_MESSAGE}
           </p>
         </div>
       </section>
