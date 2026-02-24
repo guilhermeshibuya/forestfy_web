@@ -35,6 +35,7 @@ async def register_user(
 
 @router.post("/login")
 async def login(
+  response: Response,
   form_data: OAuth2PasswordRequestForm = Depends(), 
   session: AsyncSession = Depends(get_async_session)
 ):
@@ -47,8 +48,16 @@ async def login(
       headers={"WWW-Authenticate": "Bearer"},
     )
   access_token = create_access_token(data={"sub": str(user.id)})
+
+  response.set_cookie(
+    key="access_token",
+    value=access_token,
+    httponly=True,
+    #secure=True,  # Set to True in production
+    samesite="lax"
+  )
   
-  return {"access_token": access_token, "token_type": "bearer"}
+  return {"message": "Login successful"}
 
 
 @router.post("/logout")

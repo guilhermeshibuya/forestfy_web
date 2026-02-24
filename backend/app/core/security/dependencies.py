@@ -1,5 +1,5 @@
-from fastapi import Depends, HTTPException, status
-from app.services.auth_service import verify_access_token
+from fastapi import Depends, HTTPException, status, Cookie
+from app.core.security.jwt import verify_access_token
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.db.session import get_async_session
 from fastapi.params import Depends
@@ -13,25 +13,30 @@ security = HTTPBearer()
 
 
 async def get_current_user(
-    credentials: HTTPAuthorizationCredentials = Depends(security),
+    access_token: str = Cookie(None),
     session: AsyncSession = Depends(get_async_session)
 ):
-    token = credentials.credentials
-    payload = verify_access_token(token)
-    
-    user_id = payload.get("sub")
-    if not user_id:
+    if not access_token:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail=INVALID_TOKEN
         )
+
+    payload = verify_access_token(access_token)
     
+    user_id = payload.get("sub")
+    if not user_id:
+      raise HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail=INVALID_TOKEN
+      )
+  
     user = await get_by_id(user_id, session)
 
     if user is None:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED, detail=USER_NOT_FOUND
-        )
+      raise HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED, detail=USER_NOT_FOUND
+      )
     return user
 
 
