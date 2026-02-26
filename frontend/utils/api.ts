@@ -15,7 +15,7 @@ export async function api(url: string, options?: RequestInit) {
   })
 
   if (!response.ok) {
-    throw new Error('API request failed')
+    throw new Error(response.status.toString())
   }
 
   return response.json()

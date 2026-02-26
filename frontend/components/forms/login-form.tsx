@@ -4,14 +4,17 @@ import { LoginFormData, loginSchema } from '@/schemas/login-schema'
 import { login } from '@/services/auth-service'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useForm } from 'react-hook-form'
-import { Field, FieldGroup, FieldLabel } from '../ui/field'
-import { Input } from '../ui/input'
+import { FieldGroup } from '../ui/field'
 import { Button } from '../ui/button'
 import { useRouter } from 'next/navigation'
 import { FORM_MESSAGES } from '@/constants/form-messages'
+import { LockKeyhole, Mail } from 'lucide-react'
+import { FormField } from './form-field'
+import { useState } from 'react'
 
 export function LoginForm() {
   const router = useRouter()
+  const [errorMessage, setErrorMessage] = useState<string | undefined>()
 
   const {
     register,
@@ -30,38 +33,34 @@ export function LoginForm() {
       await login(data)
       router.push('/dashboard')
     } catch {
-      alert('Login failed')
+     setErrorMessage(FORM_MESSAGES.INVALID_CREDENTIALS)
     }
   }
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+    <form onSubmit={handleSubmit(onSubmit)}>
       <FieldGroup>
-        <Field>
-          <FieldLabel htmlFor="email">{FORM_MESSAGES.EMAIL_LABEL}</FieldLabel>
-          <Input
-            type="email"
-            placeholder={FORM_MESSAGES.EMAIL_PLACEHOLDER}
-            {...register('email')}
-          />
-          {errors.email && (
-            <span className="text-red-500">{errors.email.message}</span>
-          )}
-        </Field>
+        <FormField
+          id="email"
+          label={FORM_MESSAGES.EMAIL_LABEL}
+          icon={<Mail />}
+          type="email"
+          error={errors.email?.message}
+          placeholder={FORM_MESSAGES.EMAIL_PLACEHOLDER}
+          register={register}
+        />
 
-        <Field>
-          <FieldLabel htmlFor="password">
-            {FORM_MESSAGES.PASSWORD_LABEL}
-          </FieldLabel>
-          <Input
-            type="password"
-            placeholder={FORM_MESSAGES.PASSWORD_PLACEHOLDER}
-            {...register('password')}
-          />
-          {errors.password && (
-            <span className="text-red-500">{errors.password.message}</span>
-          )}
-        </Field>
+        <FormField
+          id="password"
+          label={FORM_MESSAGES.PASSWORD_LABEL}
+          icon={<LockKeyhole />}
+          type="password"
+          error={errors.password?.message}
+          placeholder={FORM_MESSAGES.PASSWORD_PLACEHOLDER}
+          register={register}
+        />
+
+        {errorMessage && <span className="text-red-500">{errorMessage}</span>}
 
         <Button type="submit" className="w-full" disabled={isSubmitting}>
           {isSubmitting
