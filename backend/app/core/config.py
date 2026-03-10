@@ -8,3 +8,4 @@ class Settings(BaseSettings):
   JWT_ALGORITHM: str = "HS256"
   ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24  # 1 day
   MODEL_PATH: str = "/app/app/services/ml/weights/d15-sp.onnx"
+  API_PREFIX: str = "/api/v1"

@@ -7,13 +7,16 @@ import { Button } from '../ui/button'
 import { useRouter } from 'next/navigation'
 import { RegisterFormData, registerSchema } from '@/schemas/register-schema'
 import { FORM_MESSAGES } from '@/constants/form-messages'
-import { register as registerService } from '@/services/auth-service'
+// import { register as registerService } from '@/services/auth-service'
 import { LockKeyhole, Mail, User } from 'lucide-react'
 import { FormField } from './form-field'
 import { PasswordChecklist } from './password-checklist'
+import { APP_ROUTES } from '@/constants/app-routes'
+import { useAuth } from '@/hooks/use-auth'
 
 export function RegisterForm() {
   const router = useRouter()
+  const { register: registerService } = useAuth()
 
   const {
     control,
@@ -27,6 +30,7 @@ export function RegisterForm() {
       name: '',
       email: '',
       password: '',
+      confirmPassword: '',
     },
   })
 
@@ -34,12 +38,18 @@ export function RegisterForm() {
 
   async function onSubmit(data: RegisterFormData) {
     try {
-      await registerService(data)
-      router.push('/dashboard')
+      await registerService({
+        full_name: data.name,
+        email: data.email,
+        password: data.password,
+      })
+      router.push(APP_ROUTES.LOGIN)
     } catch (error: unknown) {
       if (error instanceof Error) {
         if (error.message === '400') {
           setError('email', { message: FORM_MESSAGES.USER_ALREADY_EXISTS })
+        } else {
+          setError('email', { message: FORM_MESSAGES.REGISTER_FAILED })
         }
       }
     }
@@ -79,6 +89,16 @@ export function RegisterForm() {
         />
 
         <PasswordChecklist password={password} />
+
+        <FormField
+          id="confirmPassword"
+          label={FORM_MESSAGES.CONFIRM_PASSWORD_LABEL}
+          error={errors.confirmPassword?.message}
+          icon={<LockKeyhole />}
+          type="password"
+          placeholder={FORM_MESSAGES.CONFIRM_PASSWORD_PLACEHOLDER}
+          register={register}
+        />
 
         <Button type="submit" className="w-full" disabled={isSubmitting}>
           {isSubmitting

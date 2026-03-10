@@ -1,7 +1,6 @@
 'use client'
 
 import { LoginFormData, loginSchema } from '@/schemas/login-schema'
-import { login } from '@/services/auth-service'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useForm } from 'react-hook-form'
 import { FieldGroup } from '../ui/field'
@@ -11,9 +10,12 @@ import { FORM_MESSAGES } from '@/constants/form-messages'
 import { LockKeyhole, Mail } from 'lucide-react'
 import { FormField } from './form-field'
 import { useState } from 'react'
+import { useAuth } from '@/hooks/use-auth'
+import { APP_ROUTES } from '@/constants/app-routes'
 
 export function LoginForm() {
   const router = useRouter()
+  const { login } = useAuth()
   const [errorMessage, setErrorMessage] = useState<string | undefined>()
 
   const {
@@ -30,10 +32,14 @@ export function LoginForm() {
 
   async function onSubmit(data: LoginFormData) {
     try {
-      await login(data)
-      router.push('/dashboard')
+      await login({
+        email: data.email,
+        password: data.password,
+      })
+
+      router.push(APP_ROUTES.DASHBOARD)
     } catch {
-     setErrorMessage(FORM_MESSAGES.INVALID_CREDENTIALS)
+      setErrorMessage(FORM_MESSAGES.INVALID_CREDENTIALS)
     }
   }
 
@@ -60,7 +66,11 @@ export function LoginForm() {
           register={register}
         />
 
-        {errorMessage && <span className="text-red-500">{errorMessage}</span>}
+        {errorMessage && (
+          <span id="form-error" role="alert" className="text-red-500">
+            {errorMessage}
+          </span>
+        )}
 
         <Button type="submit" className="w-full" disabled={isSubmitting}>
           {isSubmitting

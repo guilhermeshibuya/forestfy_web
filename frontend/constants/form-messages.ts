@@ -21,4 +21,12 @@ export const FORM_MESSAGES = {
   PASSWORD_SPECIAL_CHAR: 'A senha deve conter pelo menos um caractere especial',
   PASSWORD_LOWERCASE: 'A senha deve conter pelo menos uma letra minúscula',
   USER_ALREADY_EXISTS: 'Já existe um usuário com este email',
+  NAME_ONLY_LETTERS: 'O nome deve conter apenas letras',
+  NAME_MAX_LENGTH: 'O nome deve conter no máximo 100 caracteres',
+  PASSWORD_MAX_LENGTH: 'A senha deve conter no máximo 64 caracteres',
+  CONFIRM_PASSWORD_LABEL: 'Confirmar senha',
+  CONFIRM_PASSWORD_PLACEHOLDER: 'Digite sua senha novamente',
+  CONFIRM_PASSWORD_IS_REQUIRED: 'A confirmação de senha é obrigatória',
+  PASSWORDS_DO_NOT_MATCH: 'As senhas não coincidem',
+  REGISTER_FAILED: 'Falha ao registrar. Por favor, tente novamente.',
 }

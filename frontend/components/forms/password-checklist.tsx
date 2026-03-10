@@ -3,6 +3,7 @@ import { PASSWORD_RULES } from '@/constants/password-rules'
 export function PasswordChecklist({ password = '' }: { password?: string }) {
   const checks = {
     minLength: password.length >= PASSWORD_RULES.minLength.value,
+    maxLength: password.length <= PASSWORD_RULES.maxLength.value,
     lowercase: PASSWORD_RULES.lowercase.value.test(password),
     uppercase: PASSWORD_RULES.uppercase.value.test(password),
     number: PASSWORD_RULES.number.value.test(password),
@@ -15,6 +16,7 @@ export function PasswordChecklist({ password = '' }: { password?: string }) {
         const rule = PASSWORD_RULES[key as keyof typeof PASSWORD_RULES]
         return (
           <li
+            id={`password-rule-${key}`}
             key={key}
             className={`${valid ? 'text-green-500' : 'text-zinc-400'}`}
           >

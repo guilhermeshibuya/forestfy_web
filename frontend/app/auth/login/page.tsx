@@ -1,4 +1,5 @@
 import { LoginForm } from '@/components/forms/login-form'
+import { APP_ROUTES } from '@/constants/app-routes'
 import { AUTH_PAGE_MESSAGES } from '@/constants/auth-page-messages'
 import Link from 'next/link'
 
@@ -11,7 +12,7 @@ export default function LoginPage() {
       <LoginForm />
       <p className="text-sm text-zinc-700 mt-6">
         {AUTH_PAGE_MESSAGES.DONT_HAVE_ACCOUNT}{' '}
-        <Link href="/auth/register" className="text-blue-500">
+        <Link href={APP_ROUTES.REGISTER} className="text-blue-500">
           {AUTH_PAGE_MESSAGES.CLICK_HERE}
         </Link>
       </p>

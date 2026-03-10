@@ -1,7 +1,0 @@
-export default function DashboardHomePage() {
-  return (
-    <div className="flex h-screen items-center justify-center">
-      <h1 className="text-4xl font-bold">Bem-vindo ao Forestfy!</h1>
-    </div>
-  )
-}

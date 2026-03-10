@@ -8,15 +8,37 @@ export function registerEndpoint() {
   return API_BASE_URL + '/api/v1/auth/register'
 }
 
-export async function api(url: string, options?: RequestInit) {
+export function getMeEndpoint() {
+  return API_BASE_URL + '/api/v1/auth/me'
+}
+
+export function logoutEndpoint() {
+  return API_BASE_URL + '/api/v1/auth/logout'
+}
+
+export function dashboardMetricsEndpoint() {
+  return API_BASE_URL + '/api/v1/dashboard/metrics'
+}
+
+export function classificationEndpoint() {
+  return API_BASE_URL + '/api/v1/classifications'
+}
+
+export function getClassificationByIdEndpoint(id: string) {
+  return API_BASE_URL + `/api/v1/classifications/${id}`
+}
+
+export async function api<T>(url: string, options?: RequestInit): Promise<T> {
   const response = await fetch(url, {
     credentials: 'include',
     ...options,
   })
 
+  const data = await response.json().catch(() => null)
+
   if (!response.ok) {
-    throw new Error(response.status.toString())
+    throw new Error(data?.message || response.statusText)
   }
 
-  return response.json()
+  return data
 }

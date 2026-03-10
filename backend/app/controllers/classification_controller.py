@@ -7,7 +7,7 @@ from app.db.models import User
 from fastapi import Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.db.session import get_async_session
-from app.schemas.classification import ClassificationOut
+from app.schemas.classification import ClassificationOut, ClassificationResultOut
 from app.core.constants import TOP_K
 from app.core.error_messages import INVALID_IMAGE
 from app.core.exceptions import MLProcessingException, NotFoundException
@@ -46,7 +46,7 @@ async def get_classification(
     raise HTTPException(status_code=404, detail=str(e))
 
 
-@router.post("/")
+@router.post("/", response_model=ClassificationResultOut)
 async def classification(
   file: UploadFile = File(...), 
   current_user: User = Depends(get_current_user),

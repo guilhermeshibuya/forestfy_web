@@ -34,13 +34,14 @@ export function FormField<T extends FieldValues>({
           id={id}
           type={type}
           aria-invalid={!!error}
+          aria-describedby={error ? `${id}-error` : undefined}
           placeholder={placeholder}
           {...register(id)}
         />
       </InputGroup>
 
       {showErrorMessage && error && (
-        <FieldDescription className="text-red-500">{error}</FieldDescription>
+        <FieldDescription id={`${id}-error`} role='alert' className="text-red-500">{error}</FieldDescription>
       )}
     </Field>
   )

@@ -15,3 +15,4 @@ class UserOut(BaseModel):
   full_name: str
   email: EmailStr
   profile_image_url: str | None = None
+  is_admin: bool

@@ -8,12 +8,7 @@ from uuid import UUID
 
 from app.core.exceptions import MLProcessingException, NotFoundException
 from app.core.error_messages import CLASSIFICATION_NOT_FOUND, RUN_CLASSIFICATION_ERROR
-
-
-class ClassificationResult(dict):
-  label: str
-  confidence: float
-  class_id: int
+from app.schemas.classification import PredictionResult
 
 
 def normalize_confidence(value: float, decimals: int = 4) -> float:
@@ -23,7 +18,7 @@ def normalize_confidence(value: float, decimals: int = 4) -> float:
   return round(value, decimals)
 
 
-def run_classification(input_tensor: np.ndarray, top_k: int = 5) -> list[ClassificationResult]:
+def run_classification(input_tensor: np.ndarray, top_k: int = 5) -> list[PredictionResult]:
   """Run inference on the input tensor using the loaded model."""
   try:
     model = get_model()
@@ -112,7 +107,6 @@ async def get_user_classifications(
         SpeciesClassification.score,
         Species.id,
         Species.scientific_name,
-        Species.popular_name
       )
       .join(
         Species, Species.id == SpeciesClassification.species_id
@@ -126,14 +120,13 @@ async def get_user_classifications(
       {
         "species_id": row.id,
         "scientific_name": row.scientific_name,
-        "popular_name": row.popular_name,
         "score": row.score
       }
       for row in result.all()
     ]
 
     response.append({
-      "id": classification.id,
+      "classification_id": classification.id,
       "classification_date": classification.classification_date,
       "original_image_url": classification.original_image_url,
       "location": classification.location,
@@ -164,7 +157,6 @@ async def get_classification_by_id(
       SpeciesClassification.score,
       Species.id,
       Species.scientific_name,
-      Species.popular_name
     )
     .join(
       Species, Species.id == SpeciesClassification.species_id
@@ -178,14 +170,13 @@ async def get_classification_by_id(
     {
       "species_id": row.id,
       "scientific_name": row.scientific_name,
-      "popular_name": row.popular_name,
       "score": row.score
     }
     for row in result.all()
   ]
 
   return {
-    "id": classification.id,
+    "classification_id": classification.id,
     "classification_date": classification.classification_date,
     "original_image_url": classification.original_image_url,
     "location": classification.location,

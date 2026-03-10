@@ -5,6 +5,10 @@ export const PASSWORD_RULES = {
     value: 6,
     message: FORM_MESSAGES.PASSWORD_MIN_LENGTH,
   },
+  maxLength: {
+    value: 64,
+    message: FORM_MESSAGES.PASSWORD_MAX_LENGTH,
+  },
   lowercase: {
     value: /[a-z]/,
     message: FORM_MESSAGES.PASSWORD_LOWERCASE,

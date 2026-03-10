@@ -2,12 +2,14 @@ FROM node:lts-alpine3.22
 
 WORKDIR /app
 
-COPY package*.json ./
+RUN corepack enable
 
-RUN npm install 
+COPY package*.json pnpm-lock.yaml ./
+
+RUN pnpm install
 
 COPY . . 
 
 EXPOSE 3000
 
-CMD ["npm", "run", "dev"]
+CMD ["pnpm", "dev"]

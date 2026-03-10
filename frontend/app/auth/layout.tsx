@@ -15,7 +15,7 @@ export default function AuthLayout({
           </p>
         </div>
       </section>
-      <section className="pt-40 px-8">{children}</section>
+      <section className="pt-32 px-8 pb-8">{children}</section>
     </div>
   )
 }
