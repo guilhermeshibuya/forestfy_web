@@ -3,7 +3,8 @@ from app.services.ml.model_loader import get_model
 from app.services.ml.id2label import ID2LABEL
 from app.db.models import Classification, SpeciesClassification, Species
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.future import select
+from sqlalchemy import select, func
+from sqlalchemy.orm import aliased
 from uuid import UUID
 
 from app.core.exceptions import MLProcessingException, NotFoundException
@@ -182,3 +183,61 @@ async def get_classification_by_id(
     "location": classification.location,
     "predictions": species_results
   }
+
+
+async def get_recent_by_user(
+  session: AsyncSession,
+  user_id: UUID,
+  limit: int = 5
+):
+  top_score_subq = (
+    select(
+      SpeciesClassification.classification_id,
+      func.max(SpeciesClassification.score).label("top_score")
+    )
+    .group_by(SpeciesClassification.classification_id)
+    .subquery()
+  )
+
+  result = await session.execute(
+    select(
+      Classification,
+      Species.id,
+      Species.scientific_name,
+      SpeciesClassification.score
+    )
+    .join(
+      top_score_subq,
+      top_score_subq.c.classification_id == Classification.id
+    )
+    .join(
+      SpeciesClassification,
+      (SpeciesClassification.classification_id == Classification.id) &
+      (SpeciesClassification.score == top_score_subq.c.top_score)
+    )
+    .join(
+      Species,
+      Species.id == SpeciesClassification.species_id
+    )
+    .where(Classification.user_id == user_id)
+    .order_by(Classification.classification_date.desc())
+    .limit(limit)
+  )
+
+  rows = result.all()
+
+  return [
+    {
+      "classification_id": classification.id,
+      "classification_date": classification.classification_date,
+      "original_image_url": classification.original_image_url,
+      "location": classification.location,
+      "top_prediction": {
+        "species_id": species_id,
+        "scientific_name": scientific_name,
+        "score": score
+      }
+    }
+    for classification, species_id, scientific_name, score in rows
+  ]
+   

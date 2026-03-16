@@ -29,3 +29,11 @@ class ClassificationResultOut(BaseModel):
   classification_id: UUID
   top_k: int
   predictions: list[PredictionResult]
+
+
+class RecentClassificationOut(BaseModel):
+  classification_id: UUID
+  classification_date: datetime
+  original_image_url: str
+  location: str | None
+  top_prediction: SpeciesResultOut

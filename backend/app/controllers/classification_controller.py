@@ -1,3 +1,4 @@
+from app.core.storage import upload_file_to_s3
 from fastapi import APIRouter, HTTPException, UploadFile, File
 from app.services.classification_service import run_classification, save_classification, get_user_classifications, get_classification_by_id
 from PIL import Image
@@ -62,11 +63,13 @@ async def classification(
     results = run_classification(tensor, top_k=TOP_K)
   except MLProcessingException as e:
     raise HTTPException(status_code=500, detail=str(e))
+  
+  image_url = await upload_file_to_s3(file, "uploads")
 
   classification = await save_classification(
     session=session,
     user_id=current_user.id,
-    image_url="http://example.com/image.jpg",  # Placeholder URL
+    image_url=image_url, 
     location=None,
     predictions=results
   )

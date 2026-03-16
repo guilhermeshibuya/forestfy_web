@@ -9,3 +9,7 @@ class Settings(BaseSettings):
   ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24  # 1 day
   MODEL_PATH: str = "/app/app/services/ml/weights/d15-sp.onnx"
   API_PREFIX: str = "/api/v1"
+  AWS_ACCESS_KEY_ID: str = os.environ.get("AWS_ACCESS_KEY_ID")
+  AWS_SECRET_ACCESS_KEY: str = os.environ.get("AWS_SECRET_ACCESS_KEY")
+  AWS_S3_BUCKET_NAME: str = os.environ.get("AWS_S3_BUCKET_NAME")
+  AWS_S3_ENDPOINT_URL: str = os.environ.get("AWS_S3_ENDPOINT_URL")

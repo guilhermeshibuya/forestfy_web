@@ -1,10 +1,10 @@
 import os
 from uuid import UUID, uuid4
+from app.core.storage import upload_file_to_s3
 from fastapi import UploadFile
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.db.models import SpeciesImage, Species
 from sqlalchemy import select
-from app.core.constants import UPLOAD_DIR
 from app.core.error_messages import SPECIES_IMAGE_NOT_FOUND, SPECIES_NOT_FOUND
 from app.core.exceptions import NotFoundException
 
@@ -22,18 +22,11 @@ async def upload_species_image(
   if not species:
     raise NotFoundException(SPECIES_NOT_FOUND)
   
-  file_ext = file.filename.split(".")[-1]
-  file_name = f"{uuid4()}.{file_ext}"
-  file_path = f"{UPLOAD_DIR}/{file_name}"
-
-  os.makedirs(UPLOAD_DIR, exist_ok=True)
-
-  with open(file_path, "wb") as buffer:
-    buffer.write(await file.read())
+  image_url = await upload_file_to_s3(file, prefix=f"catalog/{species.scientific_name}")
   
   image = SpeciesImage(
     species_id=species_id,
-    image_url=file_path
+    image_url=image_url,
   )
 
   session.add(image)
@@ -50,11 +43,12 @@ async def get_species_images(
   result = await session.execute(
     select(SpeciesImage).where(SpeciesImage.species_id == species_id)
   )
+  images = result.scalars().all()
 
-  if not result:
+  if not images:
     raise NotFoundException(SPECIES_IMAGE_NOT_FOUND)
   
-  return result.scalars().all()
+  return images
 
 
 async def delete_species_image(
@@ -80,3 +74,18 @@ async def delete_species_image(
   await session.delete(image)
   await session.commit()
 
+
+async def get_primary_images(
+  session: AsyncSession,
+  species_ids: list[UUID]
+):
+  stmt = (
+    select(SpeciesImage)
+    .where(
+      SpeciesImage.species_id.in_(species_ids),
+      SpeciesImage.is_primary == True
+    )
+  )
+  result = await session.execute(stmt)
+
+  return result.scalars().all()

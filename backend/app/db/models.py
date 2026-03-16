@@ -1,7 +1,8 @@
 import sqlalchemy as sa
-from sqlalchemy import Column, String, Boolean, DateTime, ForeignKey, Float, Integer
+from sqlalchemy import Column, String, Boolean, DateTime, ForeignKey, Float, Integer, Index
 from sqlalchemy.orm import relationship, DeclarativeBase, Mapped, mapped_column
 from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy.sql import expression
 
 from uuid import uuid4
 
@@ -98,10 +99,20 @@ class SpeciesImage(Base):
   id: Mapped[UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid4)
   species_id: Mapped[UUID] = mapped_column(UUID(as_uuid=True), ForeignKey('species.id'), nullable=False)
   image_url: Mapped[str] = mapped_column(String, nullable=False)
+  is_primary: Mapped[bool] = mapped_column(Boolean, default=False)
 
   species: Mapped["Species"] = relationship(
     'Species', 
     back_populates='species_images'
+  )
+
+  __table_args__ = (
+    Index(
+      "unique_primary_species_image",
+      "species_id",
+      unique=True,
+      postgresql_where=expression.text("is_primary = TRUE")
+    ),
   )
 
 

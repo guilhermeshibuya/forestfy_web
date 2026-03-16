@@ -5,8 +5,8 @@ from uuid import UUID
 from app.db.models import User
 from app.core.security.dependencies import get_admin_user
 from app.db.session import get_async_session
-from app.schemas.species_image import SpeciesImageOut
-from app.services.species_image_service import upload_species_image, get_species_images, delete_species_image
+from app.schemas.species_image import SpeciesImageResponse, SpeciesPrimaryImagesRequest
+from app.services.species_image_service import upload_species_image, get_species_images, delete_species_image, get_primary_images
 from app.core.exceptions import NotFoundException
 
 
@@ -18,11 +18,11 @@ router = APIRouter(
 
 @router.post(
   "/{species_id}/images",
-  response_model=SpeciesImageOut,
+  response_model=SpeciesImageResponse,
   status_code=status.HTTP_201_CREATED
 )
 async def upload_image(
-  specieds_id: UUID,
+  species_id: UUID,
   file: UploadFile = File(...),
   session: AsyncSession = Depends(get_async_session),
   _: User = Depends(get_admin_user)
@@ -30,7 +30,7 @@ async def upload_image(
   try:
     return await upload_species_image(
       session=session,
-      species_id=specieds_id,
+      species_id=species_id,
       file=file
     )
   except NotFoundException as e:
@@ -42,7 +42,7 @@ async def upload_image(
 
 @router.get(
   "/{species_id}/images",
-  response_model=list[SpeciesImageOut]
+  response_model=list[SpeciesImageResponse]
 )
 async def get_images(
   species_id: UUID,
@@ -74,3 +74,16 @@ async def delete_image(
       status_code=status.HTTP_404_NOT_FOUND,
       detail=str(e)
     )
+  
+
+@router.post(
+  "/images/primary",
+  response_model=list[SpeciesImageResponse]
+)
+async def get_primary_species_images(
+  data: SpeciesPrimaryImagesRequest,
+  session: AsyncSession = Depends(get_async_session)
+):
+  images = await get_primary_images(session=session, species_ids=data.species_ids)
+
+  return images
