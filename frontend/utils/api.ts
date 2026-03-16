@@ -28,6 +28,10 @@ export function getClassificationByIdEndpoint(id: string) {
   return API_BASE_URL + `/api/v1/classifications/${id}`
 }
 
+export function recentActivitiesEndpoint(userId: string) {
+  return API_BASE_URL + `/api/v1/users/${userId}/activities`
+}
+
 export async function api<T>(url: string, options?: RequestInit): Promise<T> {
   const response = await fetch(url, {
     credentials: 'include',

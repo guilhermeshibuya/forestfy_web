@@ -18,7 +18,7 @@ export type SpeciesResult = {
 
 export type ClassificationResponse = {
   classification_id: string
-  classification_date: string
+  classification_date: Date
   original_image_url: string
   location: string | null
   predictions: SpeciesResult[]

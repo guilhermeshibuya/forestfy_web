@@ -1,24 +1,28 @@
 'use client'
 
-import { useState } from 'react'
+import { act, useState } from 'react'
 import { Dropzone } from './(components)/dropzone'
-import { api, classificationEndpoint } from '@/utils/api'
-import { ClassificationResultResponse } from '@/types/classification'
 import { Button } from '@/components/ui/button'
 import { Focus, Search, Sun } from 'lucide-react'
 import { CLASSIFICATION_MESSAGES } from '@/constants/classification_messages'
 import { useRouter } from 'next/navigation'
 import { APP_ROUTES } from '@/constants/app-routes'
+import { useRecentActivities } from '@/hooks/use-recent-activities'
+import { RecentActivityCard } from '../(components)/recent-activity-card'
+import { useClassification } from '@/hooks/use-classification'
+import { toast } from 'sonner'
 
 export default function ClassificationPage() {
   const [file, setFile] = useState<File | null>(null)
   const router = useRouter()
+  const { data: recentActivities } = useRecentActivities()
+  const classificaton = useClassification()
 
   async function handleSubmit(e: React.SubmitEvent) {
     e.preventDefault()
 
     if (!file) {
-      // toast
+      toast.error('Por favor, selecione um arquivo para classificação.')
       return
     }
 
@@ -26,35 +30,31 @@ export default function ClassificationPage() {
     formData.append('file', file)
 
     try {
-      const response = await api<ClassificationResultResponse>(
-        classificationEndpoint(),
-        {
-          method: 'POST',
-          body: formData,
-        },
-      )
+      const response = await classificaton.mutateAsync(file)
       setFile(null)
       router.push(
         `${APP_ROUTES.CLASSIFICATION_RESULTS}/${response.classification_id}`,
       )
     } catch (error) {
-      // toast
+      toast.error('Ocorreu um erro ao classificar a imagem. Tente novamente.')
     }
   }
   return (
     <div className="grid grid-cols-[4fr_3fr] gap-8">
-      <form onSubmit={handleSubmit} className="row-span-3">
-        <Dropzone
-          file={file}
-          onFileSelect={setFile}
-          button={
-            <Button type="submit" disabled={!file} className="w-full mt-6">
-              <Search /> {CLASSIFICATION_MESSAGES.CLASSIFY_FORM_BUTTON_LABEL}
-            </Button>
-          }
-        />
-      </form>
-      <div className="p-8 bg-zinc-50 shadow-sm rounded-xl">
+      <main className="row-span-3">
+        <form onSubmit={handleSubmit} className="h-full">
+          <Dropzone
+            file={file}
+            onFileSelect={setFile}
+            button={
+              <Button type="submit" disabled={!file} className="w-full mt-6">
+                <Search /> {CLASSIFICATION_MESSAGES.CLASSIFY_FORM_BUTTON_LABEL}
+              </Button>
+            }
+          />
+        </form>
+      </main>
+      <section className="p-4 bg-zinc-50 shadow-sm rounded-xl">
         <h3 className="text-xl text-green-900 font-semibold">
           {CLASSIFICATION_MESSAGES.TIPS_TITLE}
         </h3>
@@ -66,17 +66,35 @@ export default function ClassificationPage() {
             <Focus className="text-blue-500" /> {CLASSIFICATION_MESSAGES.TIP_2}
           </li>
         </ul>
-      </div>
-      <div className="p-8 bg-zinc-50 shadow-sm rounded-xl row-span-2">
+      </section>
+      <section className="p-4 bg-zinc-50 shadow-sm rounded-xl row-span-2">
         <h3 className="text-xl text-green-900 font-semibold">
           {CLASSIFICATION_MESSAGES.LAST_ANALYSIS_TITLE}
         </h3>
         <ol className="text-zinc-700 mt-2 space-y-2">
-          <li>Analysis 1</li>
-          <li>Analysis 2</li>
-          <li>Analysis 3</li>
+          {recentActivities?.length === 0 ? (
+            <p className="text-zinc-600">
+              {CLASSIFICATION_MESSAGES.NO_RECENT_ACTIVITIES}
+            </p>
+          ) : (
+            recentActivities?.map((activity) => (
+              <li key={activity.classification_id}>
+                {activity.original_image_url &&
+                activity.original_image_url !== '' ? (
+                  <RecentActivityCard
+                    original_image_url={activity.original_image_url}
+                    classification_date={activity.classification_date}
+                    scientific_name={activity.top_prediction.scientific_name}
+                    score={activity.top_prediction.score}
+                  />
+                ) : (
+                  <div className="bg-zinc-400 size-20 rounded-md" />
+                )}
+              </li>
+            ))
+          )}
         </ol>
-      </div>
+      </section>
     </div>
   )
 }

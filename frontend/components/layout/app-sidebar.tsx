@@ -23,7 +23,7 @@ import {
   Settings,
 } from 'lucide-react'
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
 import { APP_ROUTES } from '@/constants/app-routes'
 import { useAuth } from '@/hooks/use-auth'
 
@@ -32,37 +32,31 @@ const data = {
     {
       title: 'Início',
       url: APP_ROUTES.DASHBOARD,
-      isActive: true,
       icon: PanelsTopLeft,
     },
     {
       title: 'Classificação',
       url: APP_ROUTES.CLASSIFICATION,
-      isActive: false,
       icon: ScanSearch,
     },
     {
       title: 'Segmentação',
       url: APP_ROUTES.SEGMENTATION,
-      isActive: false,
       icon: ScanLine,
     },
     {
       title: 'Catálogo',
       url: APP_ROUTES.CATALOG,
-      isActive: false,
       icon: BookOpen,
     },
     {
       title: 'Histórico',
       url: APP_ROUTES.HISTORY,
-      isActive: false,
       icon: Clock,
     },
     {
       title: 'Configurações',
       url: APP_ROUTES.SETTINGS,
-      isActive: false,
       icon: Settings,
     },
   ],
@@ -70,6 +64,7 @@ const data = {
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const router = useRouter()
+  const path = usePathname()
   const { logout } = useAuth()
 
   async function handleLogout() {
@@ -94,9 +89,9 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             <SidebarMenu key={item.title}>
               <SidebarMenuItem key={item.title}>
                 <SidebarMenuButton
-                  className="px-4 py-2"
+                  className="px-4 py-2 cursor-pointer"
                   asChild
-                  isActive={item.isActive}
+                  isActive={path.startsWith(item.url)}
                 >
                   <div className="flex items-center gap-2 h-auto">
                     <Icon />

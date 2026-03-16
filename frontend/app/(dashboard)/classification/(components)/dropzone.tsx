@@ -48,7 +48,7 @@ export function Dropzone({ file, onFileSelect, button }: DropzoneProps) {
   }
 
   return (
-    <div className="p-8 bg-zinc-50 shadow-sm rounded-xl">
+    <div className="p-4 bg-zinc-50 shadow-sm rounded-xl h-full flex flex-col">
       <h3 className="text-xl text-green-900 font-semibold">Envie uma imagem</h3>
       <p className="text-zinc-700 mt-2">
         Faça o upload de uma imagem da madeira que deseja identificar e nosso
@@ -57,7 +57,7 @@ export function Dropzone({ file, onFileSelect, button }: DropzoneProps) {
 
       <div
         {...getRootProps()}
-        className={`mt-6 cursor-pointer border-2 border-dashed  rounded-lg p-6 flex flex-col items-center justify-center gap-4 h-72 w-full overflow-hidden 
+        className={`mt-6 cursor-pointer border-2 border-dashed  rounded-lg p-6 flex flex-col items-center justify-center gap-4 w-full overflow-hidden flex-1
           ${isDragActive && 'border-green-500 bg-green-50'} 
           ${!isDragActive && 'border-zinc-300'}
           ${isDragReject && 'border-red-500 bg-red-50'}`}
