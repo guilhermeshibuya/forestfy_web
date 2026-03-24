@@ -1,10 +1,10 @@
 'use client'
 
-import { act, useState } from 'react'
+import { useState } from 'react'
 import { Dropzone } from './(components)/dropzone'
 import { Button } from '@/components/ui/button'
 import { Focus, Search, Sun } from 'lucide-react'
-import { CLASSIFICATION_MESSAGES } from '@/constants/classification_messages'
+import { CLASSIFICATION_MESSAGES } from '@/constants/classification-messages'
 import { useRouter } from 'next/navigation'
 import { APP_ROUTES } from '@/constants/app-routes'
 import { useRecentActivities } from '@/hooks/use-recent-activities'
@@ -15,8 +15,10 @@ import { toast } from 'sonner'
 export default function ClassificationPage() {
   const [file, setFile] = useState<File | null>(null)
   const router = useRouter()
-  const { data: recentActivities } = useRecentActivities()
+  const { data } = useRecentActivities()
   const classificaton = useClassification()
+
+  const recentActivities = data?.data ?? []
 
   async function handleSubmit(e: React.SubmitEvent) {
     e.preventDefault()
@@ -39,6 +41,7 @@ export default function ClassificationPage() {
       toast.error('Ocorreu um erro ao classificar a imagem. Tente novamente.')
     }
   }
+
   return (
     <div className="grid grid-cols-[4fr_3fr] gap-8">
       <main className="row-span-3">

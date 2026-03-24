@@ -28,8 +28,28 @@ export function getClassificationByIdEndpoint(id: string) {
   return API_BASE_URL + `/api/v1/classifications/${id}`
 }
 
-export function recentActivitiesEndpoint(userId: string) {
-  return API_BASE_URL + `/api/v1/users/${userId}/activities`
+export function recentActivitiesEndpoint(
+  userId: string,
+  limit: number = 5,
+  offset: number = 0,
+) {
+  return (
+    API_BASE_URL +
+    `/api/v1/users/${userId}/activities?limit=${limit}&offset=${offset}`
+  )
+}
+
+export function getSpeciesImagesByIdListEndpoint() {
+  return API_BASE_URL + '/api/v1/species/images/primary'
+}
+
+export function getCatalogSpeciesEndpoint(
+  limit: number = 20,
+  offset: number = 0,
+) {
+  return (
+    API_BASE_URL + `/api/v1/catalog/species?limit=${limit}&offset=${offset}`
+  )
 }
 
 export async function api<T>(url: string, options?: RequestInit): Promise<T> {

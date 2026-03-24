@@ -95,7 +95,9 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                 >
                   <div className="flex items-center gap-2 h-auto">
                     <Icon />
-                    <Link href={item.url}>{item.title}</Link>
+                    <Link href={item.url} className="w-full">
+                      {item.title}
+                    </Link>
                   </div>
                 </SidebarMenuButton>
               </SidebarMenuItem>

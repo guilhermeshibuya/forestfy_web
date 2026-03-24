@@ -1,4 +1,4 @@
-type LogoProps = {
+type LogoProps = React.SVGProps<SVGSVGElement> & {
   iconColor?: string
   textColor?: string
   width?: number
@@ -10,6 +10,7 @@ export const Logo = ({
   textColor = '#F5F5F5',
   width = 162 * 0.8,
   height = 57 * 0.8,
+  ...props
 }: LogoProps) => {
   return (
     <svg
@@ -18,6 +19,7 @@ export const Logo = ({
       viewBox="0 0 162 57"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
+      {...props}
     >
       <path
         fillRule="evenodd"

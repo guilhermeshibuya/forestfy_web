@@ -1,12 +1,34 @@
 'use client'
 
-import { CLASSIFICATION_MESSAGES } from '@/constants/classification_messages'
+import { CLASSIFICATION_MESSAGES } from '@/constants/classification-messages'
 import { useClassificationResults } from '@/hooks/use-classification-results'
 import { useParams } from 'next/navigation'
 import { ConfidenceBadge } from '../../(components)/confidence-badge'
 import { Separator } from '@/components/ui/separator'
 import { getConfidenceLevel } from '../../(utils)/get-confidence-level'
 import Image from 'next/image'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@/components/ui/tooltip'
+import { Button } from '@/components/ui/button'
+import { CircleQuestionMark, FileText, RotateCcw } from 'lucide-react'
+import { TOOLTIP_CONFIDENCE_MESSAGES } from '../../(constants)/tooltip-confidence'
+import Link from 'next/link'
+import { APP_ROUTES } from '@/constants/app-routes'
+import { SpeciesCard } from '../../(components)/specieds-card'
+import { useSpeciesImageByIdList } from '@/hooks/use-species-image'
+import { useMemo } from 'react'
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+} from '@/components/ui/carousel'
+import { PDFDownloadLink } from '@react-pdf/renderer'
+import { ClassificationReport } from '@/components/pdf/classification-report'
 
 const borderColors = {
   high: 'border-green-500',
@@ -18,28 +40,43 @@ export default function ClassificationDetailsPage() {
   const params = useParams()
   const id = params.id as string
 
-  const { data } = useClassificationResults(id)
-  const topPrediction = data?.predictions[0]
-  const otherPredictions = data?.predictions.slice(1)
+  const { data: classificationResults } = useClassificationResults(id)
+  const topPrediction = classificationResults?.predictions[0]
+  const otherPredictions = classificationResults?.predictions.slice(1)
+
   const confidenceLevel = topPrediction
     ? getConfidenceLevel(topPrediction.score)
     : null
   const borderColorClass = borderColors[confidenceLevel || 'low']
+  const tooltipContent = TOOLTIP_CONFIDENCE_MESSAGES[confidenceLevel || 'low']
 
-  if (!data) {
+  const speciesIds = useMemo(() => {
+    return (
+      classificationResults?.predictions.map(
+        (prediction) => prediction.species_id,
+      ) || []
+    )
+  }, [classificationResults])
+
+  const { data: speciesImages } = useSpeciesImageByIdList(speciesIds)
+  const speciesImagesMap = new Map(
+    speciesImages?.map((img) => [img.species_id, img.image_url]) || [],
+  )
+
+  if (!classificationResults) {
     return <div></div>
   }
 
   return (
     <main className="grid grid-cols-[2fr_1fr] gap-8">
-      <section className="bg-zinc-50 p-4 rounded-lg shadow space-y-8">
+      <section className="bg-zinc-50 p-4 rounded-lg shadow space-y-4">
         <div className="grid grid-cols-2">
-          <h2 className="text-xl font-semibold text-zinc-800">
+          <h2 className="text-xl font-semibold text-zinc-700">
             {CLASSIFICATION_MESSAGES.RESULTS_TITLE}
           </h2>
 
           <Image
-            src={data.original_image_url}
+            src={classificationResults.original_image_url}
             alt="Original image used for classification"
             width={192}
             height={192}
@@ -56,6 +93,18 @@ export default function ClassificationDetailsPage() {
                   {(topPrediction.score * 100).toFixed(2)}%
                 </h3>
                 <ConfidenceBadge score={topPrediction.score} />
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button variant="ghost" size="icon-sm">
+                      <CircleQuestionMark className="text-zinc-600" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p className="max-w-[60ch] text-balance">
+                      {tooltipContent}
+                    </p>
+                  </TooltipContent>
+                </Tooltip>
               </div>
               <span className="text-4xl font-semibold text-zinc-700">
                 {topPrediction.scientific_name}
@@ -85,11 +134,62 @@ export default function ClassificationDetailsPage() {
             ))}
           </ol>
         </div>
+
+        <Separator />
+
+        <div className="flex items-center gap-4">
+          <Link href={APP_ROUTES.CLASSIFICATION}>
+            <Button>
+              <RotateCcw /> {CLASSIFICATION_MESSAGES.ANALYZE_AGAIN_BUTTON_LABEL}
+            </Button>
+          </Link>
+          <PDFDownloadLink
+            document={<ClassificationReport data={classificationResults} />}
+            fileName={`classification_report_${classificationResults.classification_id}.pdf`}
+          >
+            {({ loading }) => (
+              <Button variant="secondary">
+                <FileText />
+                {loading
+                  ? CLASSIFICATION_MESSAGES.GENERATE_REPORT_LOADING_LABEL
+                  : CLASSIFICATION_MESSAGES.GENERATE_REPORT_BUTTON_LABEL}
+              </Button>
+            )}
+          </PDFDownloadLink>
+        </div>
       </section>
 
       <section className="bg-zinc-50 p-4 rounded-lg shadow"></section>
 
-      <section className="col-span-2 bg-zinc-50 p-4 rounded-lg shadow"></section>
+      <section className="col-span-2 bg-zinc-50 p-4 rounded-lg shadow mb-8">
+        <h2 className="text-xl font-semibold text-zinc-700 mb-6">
+          {CLASSIFICATION_MESSAGES.EXAMPLES_TITLE}
+        </h2>
+        <Carousel className="w-full">
+          <CarouselContent>
+            {speciesImages?.length
+              ? classificationResults.predictions.map((prediction) => {
+                  const imageUrl =
+                    speciesImagesMap.get(prediction.species_id) || '/avatar.jpg'
+
+                  return (
+                    <CarouselItem
+                      key={prediction.species_id}
+                      className="basis-[28%] pl-8"
+                    >
+                      <SpeciesCard
+                        imageUrl={imageUrl}
+                        speciesName={prediction.scientific_name}
+                      />
+                    </CarouselItem>
+                  )
+                })
+              : null}
+          </CarouselContent>
+          <CarouselPrevious />
+          <CarouselNext />
+        </Carousel>
+      </section>
     </main>
   )
 }

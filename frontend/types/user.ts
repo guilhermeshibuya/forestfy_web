@@ -7,3 +7,10 @@ export type UserRecentActivity = {
   location: string | null
   top_prediction: SpeciesResult
 }
+
+export type UserRecentActivitiesResponse = {
+  data: UserRecentActivity[]
+  total: number
+  limit: number
+  offset: number
+}

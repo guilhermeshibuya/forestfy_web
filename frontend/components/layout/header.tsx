@@ -12,14 +12,15 @@ export function Header({ children }: { children: ReactNode }) {
       {children}
       <Image
         src={
-          user?.profile_image_url?.length
-            ? user.profile_image_url
+          user?.profile_picture_url?.length
+            ? user.profile_picture_url
             : '/avatar.jpg'
         }
-        alt="Avatar"
-        width={42}
-        height={42}
-        className="rounded-full"
+        alt="Profile picture"
+        width={48}
+        height={48}
+        className="rounded-full w-12 h-12 object-cover"
+        unoptimized
       />
     </header>
   )

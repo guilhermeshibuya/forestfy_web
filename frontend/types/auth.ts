@@ -6,7 +6,7 @@ export type User = {
   id: string
   full_name: string
   email: string
-  profile_image_url: string
+  profile_picture_url: string
 }
 
 export type UserCreate = {

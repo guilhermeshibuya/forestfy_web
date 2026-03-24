@@ -7,4 +7,8 @@ export const CLASSIFICATION_MESSAGES = {
   NO_RECENT_ACTIVITIES: 'Nenhuma atividade recente',
   RESULTS_TITLE: 'Resultado da análise',
   OTHER_PREDICTIONS_TITLE: 'Outras possíveis correspondências',
+  ANALYZE_AGAIN_BUTTON_LABEL: 'Analisar novamente',
+  GENERATE_REPORT_BUTTON_LABEL: 'Gerar relatório',
+  GENERATE_REPORT_LOADING_LABEL: 'Gerando relatório...',
+  EXAMPLES_TITLE: 'Exemplares das principais correspondências',
 }

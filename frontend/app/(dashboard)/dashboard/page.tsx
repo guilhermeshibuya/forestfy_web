@@ -5,11 +5,12 @@ import { StatsCard } from './(components)/stats-card'
 import { useDashboard } from '@/hooks/use-dashboard'
 import { useRecentActivities } from '@/hooks/use-recent-activities'
 import { RecentActivityCard } from '../(components)/recent-activity-card'
-import { CLASSIFICATION_MESSAGES } from '@/constants/classification_messages'
+import { CLASSIFICATION_MESSAGES } from '@/constants/classification-messages'
 
 export default function DashboardPage() {
   const { data: stats } = useDashboard()
-  const { data: recentActivities } = useRecentActivities()
+  const { data } = useRecentActivities()
+  const recentActivities = data?.data ?? []
 
   const cards = [
     {
