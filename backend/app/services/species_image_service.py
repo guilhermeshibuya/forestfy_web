@@ -7,6 +7,7 @@ from app.db.models import SpeciesImage, Species
 from sqlalchemy import select
 from app.core.error_messages import SPECIES_IMAGE_NOT_FOUND, SPECIES_NOT_FOUND
 from app.core.exceptions import NotFoundException
+from slugify import slugify
 
 
 async def upload_species_image(
@@ -22,7 +23,8 @@ async def upload_species_image(
   if not species:
     raise NotFoundException(SPECIES_NOT_FOUND)
   
-  image_url = await upload_file_to_s3(file, prefix=f"catalog/{species.scientific_name}")
+  safe_name = slugify(species.scientific_name)
+  image_url = await upload_file_to_s3(file, prefix=f"catalog/{safe_name}")
   
   image = SpeciesImage(
     species_id=species_id,
@@ -83,7 +85,7 @@ async def get_primary_images(
     select(SpeciesImage)
     .where(
       SpeciesImage.species_id.in_(species_ids),
-      SpeciesImage.is_primary == True
+      SpeciesImage.is_primary.is_(True)
     )
   )
   result = await session.execute(stmt)

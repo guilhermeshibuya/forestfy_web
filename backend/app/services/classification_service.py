@@ -4,7 +4,6 @@ from app.services.ml.id2label import ID2LABEL
 from app.db.models import Classification, SpeciesClassification, Species
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, func
-from sqlalchemy.orm import aliased
 from uuid import UUID
 
 from app.core.exceptions import MLProcessingException, NotFoundException
@@ -188,8 +187,14 @@ async def get_classification_by_id(
 async def get_recent_by_user(
   session: AsyncSession,
   user_id: UUID,
-  limit: int = 5
+  limit: int = 5,
+  offset: int = 0
 ):
+  total_count = await session.execute(
+    select(func.count()).select_from(Classification).where(Classification.user_id == user_id)
+  )
+  total = total_count.scalar_one()
+
   top_score_subq = (
     select(
       SpeciesClassification.classification_id,
@@ -221,13 +226,12 @@ async def get_recent_by_user(
     )
     .where(Classification.user_id == user_id)
     .order_by(Classification.classification_date.desc())
-    .limit(limit)
+    .limit(limit).offset(offset)
   )
 
   rows = result.all()
-
-  return [
-    {
+  data = [
+    {  
       "classification_id": classification.id,
       "classification_date": classification.classification_date,
       "original_image_url": classification.original_image_url,
@@ -240,4 +244,9 @@ async def get_recent_by_user(
     }
     for classification, species_id, scientific_name, score in rows
   ]
+  
+  return {
+    "data": data,
+    "total": total
+  }
    

@@ -26,3 +26,18 @@ class SpeciesPopularName(BaseModel):
   
   class Config:
     orm_mode = True
+
+
+class SpeciesCatalogItem(BaseModel):
+  id: UUID
+  scientific_name: str
+  description: str | None
+  popular_names: list[str]
+  image_url: str | None
+
+
+class SpeciesCatalogResponse(BaseModel):
+  data: list[SpeciesCatalogItem]
+  total: int
+  limit: int
+  offset: int

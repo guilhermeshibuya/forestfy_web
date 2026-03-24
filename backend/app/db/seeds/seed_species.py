@@ -1,9 +1,13 @@
 import asyncio
+import os
 from sqlalchemy.future import select
 
 from app.db.session import get_async_session
-from app.db.models import Species, SpeciesPopularName
+from app.db.models import Species, SpeciesImage, SpeciesPopularName
 from app.services.ml.id2label import ID2LABEL
+from app.core.storage import upload_local_file_to_s3
+from pathlib import Path
+from slugify import slugify
 
 
 POPULAR_NAMES_MAP = {
@@ -83,6 +87,7 @@ POPULAR_NAMES_MAP = {
 }
 
 async def seed_species():
+  
   async for session in get_async_session():
     created = 0
 
@@ -108,6 +113,23 @@ async def seed_species():
       for name in names_list:
         popular_name_obj = SpeciesPopularName(name=name)
         species.popular_names.append(popular_name_obj)
+
+      base_dir = Path(__file__).resolve().parent.parent.parent.parent
+      img_path = base_dir / "static" / "species" / f"{scientific_name}.jpg"
+
+      if not img_path.exists():
+        print(f"⚠️ Imagem não encontrada: {img_path}")
+        continue
+
+      safe_name = slugify(scientific_name)
+      image_url = await upload_local_file_to_s3(img_path, f"catalog/{safe_name}")
+
+      species_image = SpeciesImage(
+        image_url=image_url,
+        is_primary=True
+      )
+
+      species.species_images.append(species_image)
 
       session.add(species)
       created += 1

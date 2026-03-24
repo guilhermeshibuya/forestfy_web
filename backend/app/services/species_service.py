@@ -1,9 +1,10 @@
-from sqlalchemy import or_, select
+from sqlalchemy import or_, select, func, and_
+import sqlalchemy as sa
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 from uuid import UUID
 
-from app.db.models import Species, SpeciesPopularName
+from app.db.models import Species, SpeciesImage, SpeciesPopularName
 from app.core.error_messages import SPECIES_NOT_FOUND, SPECIES_ALREADY_EXISTS, POPULAR_NAME_NOT_FOUND
 from app.core.exceptions import NotFoundException, ConflictException
 from app.schemas.species import SpeciesCreate
@@ -148,6 +149,16 @@ async def delete_species(
   await session.commit()
 
 
+async def get_popular_names_by_species_id(
+  species_id: UUID,
+  session: AsyncSession
+):
+  result = await session.execute(
+    select(SpeciesPopularName)
+    .where(SpeciesPopularName.species_id == species_id)
+  )
+  return result.scalars().all()
+
 async def create_popular_name(
   species_id: UUID,
   name: str,
@@ -210,4 +221,67 @@ async def remove_popular_name(
   await session.delete(name)
   await session.commit()
 
+
+async def get_species_catalog(
+  session: AsyncSession,
+  limit: int = 20,
+  offset: int = 0
+):
+  count_stmt = select(func.count()).select_from(Species)
+  count_result = await session.execute(count_stmt)
+  total = count_result.scalar_one()
+
+  stmt = select(
+    Species.id,
+    Species.scientific_name,
+    Species.description,
+    func.array_remove(
+      func.array_agg(sa.distinct(SpeciesPopularName.name)),
+      sa.cast(None, sa.String)
+    ).label('popular_names'),
+    SpeciesImage.image_url
+  ).select_from(
+    Species
+  ).join(
+    SpeciesPopularName,
+    Species.id == SpeciesPopularName.species_id,
+    isouter=True
+  ).join(
+    SpeciesImage,
+    and_(
+      Species.id == SpeciesImage.species_id,
+      SpeciesImage.is_primary.is_(True)
+    ),
+    isouter=True
+  ).group_by(
+    Species.id,
+    Species.scientific_name,
+    Species.description,
+    SpeciesImage.image_url
+  ).order_by(
+    Species.scientific_name.asc()
+  ).limit(limit).offset(offset)
+
+  result = await session.execute(stmt)
+  rows = result.mappings().all()
   
+  if not rows:
+    return []
+
+  data = [
+    {
+      'id': row["id"],
+      'scientific_name': row["scientific_name"],
+      'description': row["description"],
+      'popular_names': row["popular_names"] or [],
+      'image_url': row["image_url"]
+    }
+    for row in rows
+  ]
+  
+  return {
+    "data": data,
+    "total": total
+  }
+
+

@@ -3,7 +3,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from uuid import UUID
 
 from app.db.models import User
-from app.schemas.species import Species, SpeciesCreate, SpeciesPopularName
+from app.schemas.species import Species, SpeciesCatalogItem, SpeciesCreate, SpeciesPopularName
 from app.core.exceptions import NotFoundException, ConflictException
 from app.db.session import get_async_session
 from app.services import species_service
@@ -140,6 +140,23 @@ async def delete_species(
     )
   
 
+@router.get(
+  "/{species_id}/popular-names",
+  response_model=list[SpeciesPopularName]
+)
+async def get_popular_names_by_species_id(
+  species_id: UUID,
+  session: AsyncSession = Depends(get_async_session),
+  _: User = Depends(get_current_user)
+):
+  try:
+    return await species_service.get_popular_names_by_species_id(species_id, session)
+  except NotFoundException as e:
+    raise HTTPException(
+      status_code=status.HTTP_404_NOT_FOUND,
+      detail=str(e)
+    )
+
 @router.post(
   "/{species_id}/popular-names"
 )
@@ -193,3 +210,5 @@ async def delete_popular_name(
       status_code=status.HTTP_404_NOT_FOUND,
       detail=str(e)
     )
+  
+

@@ -13,4 +13,4 @@ class SpeciesImageResponse(BaseModel):
 
 
 class SpeciesPrimaryImagesRequest(BaseModel):
-  species_id: List[UUID]
+  species_ids: List[UUID]

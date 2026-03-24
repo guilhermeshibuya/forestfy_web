@@ -4,6 +4,8 @@ from sqlalchemy import select
 from uuid import UUID
 
 from app.core.security.hashing import hash_password, verify_password
+from app.core.exceptions import NotFoundException
+from app.core.error_messages import USER_NOT_FOUND
 
 async def get_by_email(
   email: str,
@@ -46,4 +48,25 @@ async def create_user(
 
 def validate_password(plain: str, hashed: str) -> bool:
   return verify_password(plain, hashed)
+
+
+async def update_profile_image(
+  user_id: UUID,
+  image_url: str,
+  session: AsyncSession
+):
+  result = await session.execute(
+    select(User).where(User.id == user_id)
+  )
+  user = result.scalars().first()
+
+  if not user:
+    raise NotFoundException(USER_NOT_FOUND)
+  
+  user.profile_picture_url = image_url
+
+  await session.commit()
+  await session.refresh(user)
+
+  return user
   
