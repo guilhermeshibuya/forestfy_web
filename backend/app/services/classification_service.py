@@ -1,5 +1,5 @@
 import numpy as np
-from app.services.ml.model_loader import get_model
+from app.services.ml.model_loader import ModelType, get_model, get_model_path
 from app.services.ml.id2label import ID2LABEL
 from app.db.models import Classification, SpeciesClassification, Species
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -21,7 +21,8 @@ def normalize_confidence(value: float, decimals: int = 4) -> float:
 def run_classification(input_tensor: np.ndarray, top_k: int = 5) -> list[PredictionResult]:
   """Run inference on the input tensor using the loaded model."""
   try:
-    model = get_model()
+    model_path = get_model_path(ModelType.CLASSIFICATION)
+    model = get_model(model_path)
 
     input_name = model.get_inputs()[0].name
     outputs = model.run(None, {input_name: input_tensor})
