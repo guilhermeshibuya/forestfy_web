@@ -37,7 +37,7 @@ export default function ClassificationPage() {
       router.push(
         `${APP_ROUTES.CLASSIFICATION_RESULTS}/${response.classification_id}`,
       )
-    } catch (error) {
+    } catch {
       toast.error('Ocorreu um erro ao classificar a imagem. Tente novamente.')
     }
   }

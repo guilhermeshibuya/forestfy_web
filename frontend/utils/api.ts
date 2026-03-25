@@ -52,6 +52,10 @@ export function getCatalogSpeciesEndpoint(
   )
 }
 
+export function segmentImageEndpoint() {
+  return API_BASE_URL + '/api/v1/segment'
+}
+
 export async function api<T>(url: string, options?: RequestInit): Promise<T> {
   const response = await fetch(url, {
     credentials: 'include',

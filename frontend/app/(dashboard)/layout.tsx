@@ -24,7 +24,7 @@ export default function DashboardLayout({
   return (
     <SidebarProvider>
       <AppSidebar />
-      <section className="flex flex-col p-8 gap-8 w-full max-h-dvh">
+      <section className="flex flex-col p-8 gap-8 w-full">
         <Header>
           {description && (
             <div className="flex flex-col justify-center items-start gap-2">

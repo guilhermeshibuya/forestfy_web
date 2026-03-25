@@ -11,6 +11,7 @@ type SpeciesCatalogCardProps = {
   biomes: string[]
   description: string
   imageUrl: string
+  refCallback?: (node: HTMLDivElement | null) => void
 }
 
 export function SpeciesCatalogCard({
@@ -20,9 +21,13 @@ export function SpeciesCatalogCard({
   biomes,
   description,
   imageUrl,
+  refCallback,
 }: SpeciesCatalogCardProps) {
   return (
-    <section className="max-w-md rounded-lg overflow-hidden bg-zinc-50 border border-zinc-900/10">
+    <section
+      ref={refCallback}
+      className="max-w-md rounded-lg overflow-hidden bg-zinc-50 border border-zinc-900/10 species-catalog-card"
+    >
       <div className="grid">
         <Image
           src={imageUrl}

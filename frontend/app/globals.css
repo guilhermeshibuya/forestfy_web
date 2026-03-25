@@ -124,3 +124,12 @@
     @apply bg-background text-foreground;
   }
 }
+
+.species-catalog-card {
+  opacity: 0;
+  transition: 800ms ease;
+}
+
+.species-catalog-card.show {
+  opacity: 1;
+}
