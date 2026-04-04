@@ -58,6 +58,28 @@ O projeto é composto por:
 - Gestão de imagens de espécies (upload, listagem, remoção e imagens primárias).
 - Upload de imagem de perfil do usuário.
 
+## Galeria
+
+### Tela de Login
+
+![Placeholder - Tela de Login](./docs/images/login.jpg)
+
+### Dashboard
+
+![Placeholder - Dashboard](./docs/images/dashboard.jpg)
+
+### Classificação
+
+![Placeholder - Classificacao](./docs/images/classification.jpg)
+
+### Segmentação
+
+![Placeholder - Segmentacao](./docs/images/segmentation.jpg)
+
+### Catálogo
+
+![Placeholder - Catalogo](./docs/images/catalog.jpg)
+
 ## Estrutura do Projeto
 
 ```text
