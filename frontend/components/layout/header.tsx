@@ -55,8 +55,8 @@ export function Header({ children }: { children: ReactNode }) {
             <DropdownMenuLabel>{user?.full_name}</DropdownMenuLabel>
           </DropdownMenuGroup>
           <DropdownMenuSeparator />
-          <DropdownMenuGroup>
-            <DropdownMenuItem>
+          <DropdownMenuGroup className="*:cursor-pointer">
+            <DropdownMenuItem onClick={() => router.push(APP_ROUTES.SETTINGS)}>
               <Settings />
               Configurações
             </DropdownMenuItem>
